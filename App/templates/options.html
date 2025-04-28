@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PhishIQ - Choose Detection Type</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .card-content {
+      display: none;
+    }
+    .card.active .card-content {
+      display: block;
+    }
+    .card {
+      transition: transform 0.3s ease, max-height 0.5s ease;
+    }
+    .card:hover {
+      transform: scale(1.02);
+    }
+    .card.active {
+      transform: scale(1.01);
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-black via-gray-800 to-gray-900 text-white min-h-screen overflow-y-auto py-12 px-4">
+
+  <div class="w-full max-w-4xl mx-auto">
+    <h2 class="text-5xl font-extrabold text-center mb-16">Choose Detection Type</h2>
+
+    <div id="card-grid" class="flex flex-col gap-10 transition-all duration-300">
+
+      <!-- Email Detection -->
+      <div class="card bg-gray-100 text-black rounded-2xl p-8 shadow-xl">
+        <div class="card-header flex items-center mb-4 cursor-pointer">
+          <svg class="w-8 h-8 text-gray-700 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8m-18 8h18a2 2 0 002-2V8a2 2 0 00-2-2H3a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+          </svg>
+          <h3 class="text-2xl font-bold text-gray-800">Email Detection</h3>
+        </div>
+        <p class="text-gray-600 text-lg mb-4">Detect phishing attempts in email content.</p>
+        <div class="card-content">
+          <textarea class="w-full p-3 border rounded mb-3 email-input" placeholder="Paste email content here..." rows="6"></textarea>
+          <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 check-btn">Check</button>
+        </div>
+      </div>
+
+      <!-- SMS Detection -->
+      <div class="card bg-gray-100 text-black rounded-2xl p-8 shadow-xl">
+        <div class="card-header flex items-center mb-4 cursor-pointer">
+          <svg class="w-8 h-8 text-gray-700 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m-2 8c-4.418 0-8-2.686-8-6s3.582-6 8-6 8 2.686 8 6-3.582 6-8 6z" />
+          </svg>
+          <h3 class="text-2xl font-bold text-gray-800">SMS Detection</h3>
+        </div>
+        <p class="text-gray-600 text-lg mb-4">Scan SMS content for potential phishing messages.</p>
+        <div class="card-content">
+          <textarea class="w-full p-3 border rounded mb-3 sms-input" placeholder="Paste SMS message here..." rows="6"></textarea>
+          <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 check-btn">Check</button>
+        </div>
+      </div>
+
+      <!-- URL Detection -->
+      <div class="card bg-gray-100 text-black rounded-2xl p-8 shadow-xl">
+        <div class="card-header flex items-center mb-4 cursor-pointer">
+          <svg class="w-8 h-8 text-gray-700 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m8.485-9H20m-16 0H3m15.364 6.364l-.707.707M6.343 6.343l-.707.707m12.728 0l-.707-.707M6.343 17.657l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <h3 class="text-2xl font-bold text-gray-800">URL Detection</h3>
+        </div>
+        <p class="text-gray-600 text-lg mb-4">Check if a URL is suspicious or safe.</p>
+        <div class="card-content">
+          <input type="text" class="w-full p-3 border rounded mb-3 url-input" placeholder="Enter URL here..." />
+          <button class="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 check-btn">Check</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="result-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden justify-center items-center z-50">
+    <div class="bg-white text-black max-w-md w-full p-6 rounded-xl shadow-2xl text-center relative">
+      <h4 class="text-2xl font-semibold mb-4">Detection Result</h4>
+      <p id="result-text" class="text-lg mb-6 whitespace-pre-line"></p>
+      <button onclick="closeModal()" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 transition">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const cards = document.querySelectorAll('.card');
+    document.querySelectorAll('.card-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const clickedCard = header.closest('.card');
+        const isActive = clickedCard.classList.contains('active');
+        cards.forEach(card => {
+          card.classList.remove('active');
+          card.style.order = 'unset';
+        });
+        if (!isActive) {
+          clickedCard.classList.add('active');
+          clickedCard.style.order = '-1';
+        }
+      });
+    });
+
+    document.querySelectorAll('.check-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const card = button.closest('.card');
+        let type = '';
+        let input = '';
+    
+        if (card.querySelector('.email-input')) {
+          type = 'email';
+          input = card.querySelector('.email-input').value.trim();
+        } else if (card.querySelector('.sms-input')) {
+          type = 'sms';
+          input = card.querySelector('.sms-input').value.trim();
+        } else if (card.querySelector('.url-input')) {
+          type = 'url';
+          input = card.querySelector('.url-input').value.trim();
+        }
+    
+        if (!input) {
+          showModal("Please enter a valid input.", 'red');
+          return;
+        }
+    
+        try {
+          const res = await fetch('http://localhost:5000/detect', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input, type })
+          });
+    
+          const data = await res.json();
+    
+          let detectionMessage = '';
+          let sourceMessage = '';
+          let color = 'red'; // default red
+    
+          if (data.result) {
+            detectionMessage = `Detection: ${data.result}`;
+            if (data.result.toLowerCase() === 'safe') {
+              color = 'green'; // safe -> green
+            }
+          }
+    
+          if (data.source && data.source !== 'N/A') {
+            sourceMessage = `Source: ${data.source}`;
+          }
+    
+          const fullMessage = `${detectionMessage}\n${sourceMessage}`;
+          showModal(fullMessage, color);
+        } catch (error) {
+          console.error(error);
+          showModal("Failed to connect to backend.", 'red');
+        }
+      });
+    });
+    
+    function showModal(message, color) {
+      const resultText = document.getElementById('result-text');
+      resultText.innerText = message;
+      resultText.style.color = color;
+      resultText.style.fontWeight = 'bold';
+      document.getElementById('result-modal').classList.remove('hidden');
+      document.getElementById('result-modal').classList.add('flex');
+    }
+    
+    function closeModal() {
+      document.getElementById('result-modal').classList.remove('flex');
+      document.getElementById('result-modal').classList.add('hidden');
+    }
+    
+  </script>
+
+</body>
+</html>
